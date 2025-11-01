@@ -49,8 +49,12 @@ RUN apt-get update \
 # ===== Python зависимости =====
 COPY requirements.txt ./requirements.txt
 
+# Устанавливаем зависимости с retry для git clone
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt \
+    && for i in 1 2 3; do \
+        pip install -r requirements.txt && break || \
+        (echo "Retry $i/3..." && sleep 5); \
+    done \
     && playwright install-deps chromium \
     && playwright install chromium
 
