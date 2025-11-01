@@ -43,6 +43,9 @@ class Config:
     # Proxy
     PROXY_ROTATION_ENABLED: bool = os.getenv('PROXY_ROTATION_ENABLED', 'true').lower() == 'true'
 
+    # Logging
+    log_level: str = os.getenv('LOG_LEVEL', 'INFO')
+
     @staticmethod
     def get_hostname() -> str:
         """Получает hostname текущей машины"""
@@ -65,3 +68,11 @@ class Config:
 
 # Глобальный экземпляр конфигурации
 config = Config()
+
+# Алиас для совместимости с logging_utils
+Settings = Config
+
+
+def get_settings() -> Config:
+    """Возвращает глобальный экземпляр конфигурации"""
+    return config

@@ -1,0 +1,23 @@
+# Web automation
+playwright>=1.46
+
+# Avito library (детекторы, парсеры, капча)
+git+https://github.com/Stepan2222000/avito-library.git@main#egg=avito-library
+
+# Database
+asyncpg>=0.29
+
+# Configuration
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# Event loop (Linux only)
+uvloop>=0.19; sys_platform != 'win32'
+
+# HTML parsing (для avito-library)
+beautifulsoup4>=4.12
+lxml>=4.9
+
+# Image processing (для GeeTest капчи в avito-library)
+numpy>=1.26
+opencv-python-headless>=4.10

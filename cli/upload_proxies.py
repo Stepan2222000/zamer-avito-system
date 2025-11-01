@@ -27,6 +27,7 @@ upload_proxies.py - Загрузка прокси в БД из data/proxies.txt
 import sys
 import psycopg2
 from pathlib import Path
+from io import StringIO
 
 
 # ============================================================================
@@ -245,7 +246,7 @@ def upload_overwrite(conn, proxies: list[str]) -> int:
 
     Что делает:
         1. DELETE FROM proxies - удаляет все прокси
-        2. INSERT INTO proxies (proxy) VALUES ... - добавляет новые
+        2. Использует COPY FROM stdin для быстрой вставки (в 10-100 раз быстрее executemany)
 
     Аргументы:
         conn: Подключение к PostgreSQL
@@ -263,12 +264,10 @@ def upload_overwrite(conn, proxies: list[str]) -> int:
     deleted_count = cursor.rowcount
     print(f"  ✓ Удалено старых прокси: {deleted_count}")
 
-    # 2. Вставляем новые прокси
-    for proxy in proxies:
-        cursor.execute(
-            "INSERT INTO proxies (proxy) VALUES (%s)",
-            (proxy,)
-        )
+    # 2. Вставляем новые прокси через COPY (быстрый bulk insert)
+    print(f"  → Загрузка {len(proxies)} прокси через COPY FROM stdin...")
+    data = StringIO('\n'.join(proxies))
+    cursor.copy_from(data, 'proxies', columns=('proxy',))
 
     conn.commit()
 

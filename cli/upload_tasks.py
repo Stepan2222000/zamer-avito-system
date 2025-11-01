@@ -25,6 +25,7 @@ upload_tasks.py - Загрузка задач в БД из data/items.txt
 import sys
 import psycopg2
 from pathlib import Path
+from io import StringIO
 
 
 # ============================================================================
@@ -194,7 +195,7 @@ def upload_overwrite(conn, items: list[int]) -> int:
 
     Что делает:
         1. DELETE FROM tasks - удаляет все задачи
-        2. INSERT INTO tasks (item_id) VALUES ... - добавляет новые
+        2. Использует COPY FROM stdin для быстрой вставки (в 10-100 раз быстрее executemany)
 
     Аргументы:
         conn: Подключение к PostgreSQL
@@ -212,12 +213,10 @@ def upload_overwrite(conn, items: list[int]) -> int:
     deleted_count = cursor.rowcount
     print(f"  ✓ Удалено старых задач: {deleted_count}")
 
-    # 2. Вставляем новые задачи
-    for item_id in items:
-        cursor.execute(
-            "INSERT INTO tasks (item_id) VALUES (%s)",
-            (item_id,)
-        )
+    # 2. Вставляем новые задачи через COPY (быстрый bulk insert)
+    print(f"  → Загрузка {len(items)} задач через COPY FROM stdin...")
+    data = StringIO('\n'.join(str(item_id) for item_id in items))
+    cursor.copy_from(data, 'tasks', columns=('item_id',))
 
     conn.commit()
 

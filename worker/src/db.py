@@ -263,7 +263,7 @@ async def mark_task_completed(task_id: int) -> bool:
 
 
 async def increment_task_attempts(task_id: int) -> bool:
-    """Увеличивает счетчик попыток или переводит в failed"""
+    """Возвращает задачу в pending или failed (attempts уже увеличен в acquire_task)"""
     for attempt in range(config.DB_RETRY_ATTEMPTS):
         try:
             conn = await get_connection()
@@ -274,7 +274,8 @@ async def increment_task_attempts(task_id: int) -> bool:
                         WHEN attempts >= max_attempts THEN 'failed'
                         ELSE 'pending'
                     END,
-                    worker_id = NULL
+                    worker_id = NULL,
+                    last_attempt_at = NULL
                     WHERE id=$1
                 """, task_id)
                 return True

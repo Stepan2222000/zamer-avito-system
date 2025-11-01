@@ -1,0 +1,53 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: zamer_avito_worker
+
+    # Автоматический перезапуск при падении
+    restart: unless-stopped
+
+    # Увеличиваем shared memory для Chromium
+    shm_size: 2gb
+
+    # Переменные окружения (ХАРДКОД согласно CLAUDE.md)
+    environment:
+      # Database
+      DB_HOST: "81.30.105.134"
+      DB_PORT: "5413"
+      DB_NAME: "zamer_avito_system"
+      DB_USER: "admin"
+      DB_PASSWORD: "Password123"
+
+      # Program identity
+      PROGRAM_ID: "zamer_avito_worker"
+
+      # Workers configuration
+      WORKERS_COUNT: "15"
+
+      # Playwright configuration
+      PLAYWRIGHT_HEADLESS: "false"
+      PLAYWRIGHT_TIMEOUT: "30000"
+
+      # Xvfb configuration
+      XVFB_SCREEN: "1920x1080x24"
+
+      # Timeouts (секунды)
+      TASK_TIMEOUT: "600"
+      DB_CONNECT_TIMEOUT: "10"
+
+      # Retry logic
+      MAX_TASK_ATTEMPTS: "5"
+      RETRY_DELAY: "10"
+      DB_RETRY_ATTEMPTS: "5"
+
+      # Heartbeat
+      HEARTBEAT_INTERVAL: "30"
+
+      # Proxy rotation
+      PROXY_ROTATION_ENABLED: "true"
+
+      # Logging
+      LOG_LEVEL: "INFO"
